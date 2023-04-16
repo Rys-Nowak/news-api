@@ -1,4 +1,4 @@
-package com.java.api.news.model;
+package com.java.api.news.phrase;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -14,5 +14,12 @@ public class Phrase {
 
     @Id
     @Column(nullable = false)
-    private String observedPhrase;
+    public String observedPhrase;
+
+    public Phrase() {}
+
+    public Phrase(String username, String observedPhrase) {
+        this.username = username;
+        this.observedPhrase = observedPhrase;
+    }
 }

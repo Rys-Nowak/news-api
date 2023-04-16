@@ -13,10 +13,22 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 @ControllerAdvice
 public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 
-    @ExceptionHandler({UserNotFoundException.class, PhraseNotFoundException.class})
-    protected ResponseEntity<Object> handleNotFound(Exception ex, WebRequest request) {
-        return handleExceptionInternal(ex, "Object not found",
+    @ExceptionHandler({UserNotFoundException.class})
+    protected ResponseEntity<Object> handleUserNotFound(Exception ex, WebRequest request) {
+        return handleExceptionInternal(ex, "User not found",
                 new HttpHeaders(), HttpStatus.NOT_FOUND, request);
+    }
+
+    @ExceptionHandler({PhraseNotFoundException.class})
+    protected ResponseEntity<Object> handlePhraseNotFound(Exception ex, WebRequest request) {
+        return handleExceptionInternal(ex, "Current user has not observed given phrase",
+                new HttpHeaders(), HttpStatus.NOT_FOUND, request);
+    }
+
+    @ExceptionHandler({WrongPasswordException.class})
+    protected ResponseEntity<Object> handleWrongPassword(Exception ex, WebRequest request) {
+        return handleExceptionInternal(ex, "Wrong password",
+                new HttpHeaders(), HttpStatus.UNAUTHORIZED, request);
     }
 
     @ExceptionHandler({ConstraintViolationException.class, DataIntegrityViolationException.class})

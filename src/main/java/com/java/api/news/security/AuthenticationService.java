@@ -1,4 +1,4 @@
-package com.java.api.news.service;
+package com.java.api.news.security;
 
 public class AuthenticationService {
 }
