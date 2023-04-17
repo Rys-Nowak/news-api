@@ -1,12 +1,11 @@
 package com.java.api.news.user;
 
 import com.java.api.news.exception.UserNotFoundException;
-import com.java.api.news.exception.WrongPasswordException;
+import com.java.api.news.security.AuthenticationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -15,20 +14,19 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
     @Autowired
     private UserRepository userRepository;
-
     @Autowired
-    private PasswordEncoder encoder;
+    private AuthenticationService auth;
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody User user) {
+    public ResponseEntity<String> login(@RequestBody User user) throws UserNotFoundException {
         if (userRepository.findById(user.username).isEmpty())
             throw new UserNotFoundException();
 
-        if (!encoder.matches(user.password, userRepository.findById(user.username).get().password))
-            throw new WrongPasswordException();
+        String sessionId = auth.verifyUser(user, userRepository.findById(user.username).get().password);
 
-        ResponseCookie cookie = ResponseCookie.from("username", user.username)
+        ResponseCookie cookie = ResponseCookie.from("sessionId", sessionId)
                 .httpOnly(true)
+//                .secure(true)
                 .path("/api")
                 .maxAge(60 * 60 * 24) // 24h
                 .build();
@@ -41,16 +39,18 @@ public class UserController {
 
     @PostMapping("/register")
     public String register(@RequestBody User user) {
-        user.password = encoder.encode(user.password);
+        user.password = auth.hashPassword(user.password);
         userRepository.save(user);
         return user.username;
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<String> logout() {
+    public ResponseEntity<String> logout(@CookieValue(name = "sessionId", defaultValue = "") String sessionId) {
         ResponseCookie deleteCookie = ResponseCookie
-                .from("user", "")
+                .from("sessionId", "")
                 .build();
+
+        auth.clearSession(sessionId);
 
         return ResponseEntity
                 .ok()
