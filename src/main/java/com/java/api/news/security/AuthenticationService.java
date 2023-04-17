@@ -21,20 +21,20 @@ public class AuthenticationService {
             throw new WrongPasswordException();
 
         String sessionId = UUID.randomUUID().toString();
-        sessions.put(user.username, sessionId);
+        sessions.put(sessionId, user.username);
 
         return sessionId;
     }
 
     public String verifySession(String sessionId) throws InvalidCookieException {
-        if (!sessions.containsValue(sessionId))
+        if (!sessions.containsKey(sessionId))
             throw new InvalidCookieException("Invalid sessionId");
 
-        return sessions.keySet().stream().filter((key) -> sessions.get(key).equals(sessionId)).toList().get(0);
+        return sessions.get(sessionId);
     }
 
     public void clearSession(String sessionId) {
-        sessions.remove(sessions.keySet().stream().filter((key) -> sessions.get(key).equals(sessionId)).toList().get(0));
+        sessions.remove(sessionId);
     }
 
     public String hashPassword(String password) {

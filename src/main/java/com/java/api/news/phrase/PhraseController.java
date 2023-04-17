@@ -50,7 +50,7 @@ public class PhraseController {
 
         var id = new PhraseId(username, phrase);
         if (phraseRepository.findById(id).isEmpty())
-            throw new PhraseNotFoundException();
+            throw new PhraseNotFoundException("Current user does not observe this phrase");
 
         phraseRepository.deleteById(new PhraseId(username, phrase));
     }

@@ -13,15 +13,9 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 @ControllerAdvice
 public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 
-    @ExceptionHandler({UserNotFoundException.class})
-    protected ResponseEntity<Object> handleUserNotFound(Exception ex, WebRequest request) {
-        return handleExceptionInternal(ex, "User not found",
-                new HttpHeaders(), HttpStatus.NOT_FOUND, request);
-    }
-
-    @ExceptionHandler({PhraseNotFoundException.class})
-    protected ResponseEntity<Object> handlePhraseNotFound(Exception ex, WebRequest request) {
-        return handleExceptionInternal(ex, "Current user has not observed given phrase",
+    @ExceptionHandler({UserNotFoundException.class, PhraseNotFoundException.class})
+    protected ResponseEntity<Object> handleNotFound(Exception ex, WebRequest request) {
+        return handleExceptionInternal(ex, ex.getMessage(),
                 new HttpHeaders(), HttpStatus.NOT_FOUND, request);
     }
 
@@ -29,6 +23,12 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     protected ResponseEntity<Object> handleWrongPassword(Exception ex, WebRequest request) {
         return handleExceptionInternal(ex, "Wrong password",
                 new HttpHeaders(), HttpStatus.UNAUTHORIZED, request);
+    }
+
+    @ExceptionHandler({SearchApiConnectionException.class})
+    protected ResponseEntity<Object> sad(Exception ex, WebRequest request) {
+        return handleExceptionInternal(ex, "Error connecting with bing search api: " + ex.getMessage(),
+                new HttpHeaders(), HttpStatus.GATEWAY_TIMEOUT, request);
     }
 
     @ExceptionHandler({ConstraintViolationException.class, DataIntegrityViolationException.class})

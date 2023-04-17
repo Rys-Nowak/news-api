@@ -20,7 +20,7 @@ public class UserController {
     @PostMapping("/login")
     public ResponseEntity<String> login(@RequestBody User user) throws UserNotFoundException {
         if (userRepository.findById(user.username).isEmpty())
-            throw new UserNotFoundException();
+            throw new UserNotFoundException("User not found");
 
         String sessionId = auth.verifyUser(user, userRepository.findById(user.username).get().password);
 
