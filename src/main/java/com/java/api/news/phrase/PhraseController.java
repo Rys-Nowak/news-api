@@ -19,16 +19,16 @@ public class PhraseController {
     private AuthenticationService auth;
 
     @GetMapping
-    public Iterable<Phrase> getPhrases(
+    public Iterable<String> getPhrases(
             @CookieValue(name = "sessionId", defaultValue = "") String sessionId
     ) {
         String username = auth.verifySession(sessionId);
 
         var allEntries = phraseRepository.findAll();
-        var phrases = new ArrayList<Phrase>();
+        var phrases = new ArrayList<String>();
         for (Phrase phrase : allEntries) {
             if (phrase.username.equals(username))
-                phrases.add(phrase);
+                phrases.add(phrase.observedPhrase);
         }
         return phrases;
     }
