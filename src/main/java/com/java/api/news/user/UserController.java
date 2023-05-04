@@ -1,10 +1,12 @@
 package com.java.api.news.user;
 
+import com.java.api.news.exception.UserExistsException;
 import com.java.api.news.exception.UserNotFoundException;
 import com.java.api.news.security.AuthenticationService;
 import com.java.api.news.security.CookieAuthenticationFilter;
 import com.java.api.news.security.CredentialsDto;
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +18,8 @@ import org.springframework.web.bind.annotation.*;
 import java.net.URI;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
+import java.util.Optional;
+import java.util.stream.Stream;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:3000")
@@ -33,7 +37,7 @@ public class UserController {
     ) throws UserNotFoundException {
         Cookie authCookie = new Cookie(CookieAuthenticationFilter.COOKIE_NAME, user.getToken());
         authCookie.setHttpOnly(true);
-        authCookie.setSecure(true);
+//        authCookie.setSecure(true);
         authCookie.setMaxAge((int) Duration.of(1, ChronoUnit.DAYS).toSeconds());
         authCookie.setPath("/");
 
@@ -44,14 +48,27 @@ public class UserController {
 
     @PostMapping("/register")
     public ResponseEntity<String> register(@RequestBody @Validated CredentialsDto user) {
-        UserEntity createdUser = auth.createUser(user.username(), user.password());
+        if (userRepository.findById(user.username()).isPresent())
+            throw new UserExistsException();
+
+        UserEntity createdUser = userRepository.save(new UserEntity(user.username(), auth.hashPassword(String.valueOf(user.password()))));
         return ResponseEntity.ok().body(createdUser.getUsername());
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<Void> logout() {
+    public ResponseEntity<String> logout(HttpServletRequest request, HttpServletResponse response) {
         SecurityContextHolder.clearContext();
-        return ResponseEntity.noContent().build();
+
+        Optional<Cookie> authCookie = Stream.of(Optional.ofNullable(request.getCookies()).orElse(new Cookie[0]))
+                .filter(cookie -> CookieAuthenticationFilter.COOKIE_NAME.equals(cookie.getName()))
+                .findFirst();
+
+        authCookie.ifPresent(cookie -> {
+            cookie.setMaxAge(0);
+            response.addCookie(authCookie.get());
+        });
+
+        return ResponseEntity.ok("Logged out");
     }
 
     @GetMapping("/user")

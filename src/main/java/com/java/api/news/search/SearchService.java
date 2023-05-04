@@ -63,7 +63,6 @@ public class SearchService {
         }
 
         var searchResults = new ArrayList<String>(phrases.size());
-        ;
         for (String phrase : phrases) {
             searchResults.add(makeRequest(phrase, page, count));
             Thread.sleep(340); // 3 requests per second - free access

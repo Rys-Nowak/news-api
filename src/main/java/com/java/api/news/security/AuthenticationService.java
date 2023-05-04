@@ -84,10 +84,6 @@ public class AuthenticationService {
         }
     }
 
-    public UserEntity createUser(String username, char[] password) {
-        return userRepository.save(new UserEntity(username, hashPassword(String.valueOf(password))));
-    }
-
     public String hashPassword(String password) {
         return encoder.encode(password);
     }

@@ -24,7 +24,7 @@ public class SearchController {
             @RequestParam(value = "count", required = false) Integer count
     ) throws SearchApiConnectionException {
         if (page == null) page = 1;
-        if (count == null) count = 10;
+        if (count == null) count = 15;
 
         String response;
         try {
@@ -42,7 +42,7 @@ public class SearchController {
             @RequestParam(value = "count", required = false) Integer count
     ) throws SearchApiConnectionException {
         if (page == null) page = 1;
-        if (count == null) count = 20;
+        if (count == null) count = 30;
 
         String response;
         try {
