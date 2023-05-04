@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.ArrayList;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:3000")
 @RequestMapping("/api/phrase")
 public class PhraseController {
     @Autowired
@@ -19,6 +18,12 @@ public class PhraseController {
     @Autowired
     private AuthenticationService auth;
 
+    /**
+     * Gets all observed by user phrases
+     *
+     * @param user user data
+     * @return all user's observed phrases
+     */
     @GetMapping
     public Iterable<String> getPhrases(@AuthenticationPrincipal UserDto user) {
         var allEntries = phraseRepository.findAll();
@@ -30,6 +35,13 @@ public class PhraseController {
         return phrases;
     }
 
+    /**
+     * Adds new phrase to user's observed phrases
+     *
+     * @param user   user data
+     * @param phrase new phrase to observe (request body)
+     * @return created PhraseEntity object - new observed phrase and username
+     */
     @PostMapping()
     public PhraseEntity addPhrase(
             @AuthenticationPrincipal UserDto user,
@@ -38,6 +50,13 @@ public class PhraseController {
         return phraseRepository.save(new PhraseEntity(user.getUsername(), phrase));
     }
 
+    /**
+     * Deletes user's observed phrase
+     *
+     * @param user   user data
+     * @param phrase phrase to delete (request body)
+     * @throws PhraseNotFoundException if user does not observe given phrase
+     */
     @DeleteMapping()
     public void deletePhrase(
             @AuthenticationPrincipal UserDto user,

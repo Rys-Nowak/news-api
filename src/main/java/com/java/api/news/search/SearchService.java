@@ -54,6 +54,16 @@ public class SearchService {
         return gson.toJson(allValues);
     }
 
+    /**
+     * Makes request to Bing Search Api in order to get news
+     * related to observed by user phrases, prepares data
+     *
+     * @param page     index of results' page
+     * @param count    amount of news related to one phrase
+     * @param username of the user
+     * @return Json Array of news objects
+     * @throws Exception if connection with api goes wrong
+     */
     public String searchObservedNews(int page, int count, String username) throws Exception {
         var allEntries = phraseRepository.findAll();
         var phrases = new ArrayList<String>();
@@ -71,6 +81,16 @@ public class SearchService {
         return concatJsonArrays(searchResults);
     }
 
+    /**
+     * Makes request to Bing Search Api in order to get news
+     * related to given phrase, prepares data
+     *
+     * @param searchTerm phrase to search
+     * @param page       index of results' page
+     * @param count      amount of news related to one phrase
+     * @return Json Array of news objects
+     * @throws Exception if connection with api goes wrong
+     */
     public String searchNews(String searchTerm, int page, int count) throws Exception {
         return makeRequest(searchTerm, page, count);
     }

@@ -1,7 +1,6 @@
 package com.java.api.news.user;
 
 import com.java.api.news.exception.UserExistsException;
-import com.java.api.news.exception.UserNotFoundException;
 import com.java.api.news.security.AuthenticationService;
 import com.java.api.news.security.CookieAuthenticationFilter;
 import com.java.api.news.security.CredentialsDto;
@@ -15,14 +14,12 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.net.URI;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 import java.util.stream.Stream;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:3000")
 @RequestMapping("/api")
 public class UserController {
     @Autowired
@@ -30,14 +27,21 @@ public class UserController {
     @Autowired
     private AuthenticationService auth;
 
+    /**
+     * Enables login by username and password
+     *
+     * @param user            user data
+     * @param servletResponse http response object
+     * @return response with status 200 if successfully authenticated
+     */
     @PostMapping("/login")
     public ResponseEntity<UserDto> login(
             @AuthenticationPrincipal UserDto user,
             HttpServletResponse servletResponse
-    ) throws UserNotFoundException {
+    ) {
         Cookie authCookie = new Cookie(CookieAuthenticationFilter.COOKIE_NAME, user.getToken());
         authCookie.setHttpOnly(true);
-//        authCookie.setSecure(true);
+        authCookie.setSecure(true);
         authCookie.setMaxAge((int) Duration.of(1, ChronoUnit.DAYS).toSeconds());
         authCookie.setPath("/");
 
@@ -46,8 +50,16 @@ public class UserController {
         return ResponseEntity.ok(user);
     }
 
+    /**
+     * Creates new user with given username and password
+     *
+     * @param user user data (request body)
+     * @return New user's username
+     * @throws UserExistsException if user with given username already exists in the database
+     */
     @PostMapping("/register")
-    public ResponseEntity<String> register(@RequestBody @Validated CredentialsDto user) {
+    public ResponseEntity<String> register(@RequestBody @Validated CredentialsDto user)
+            throws UserExistsException {
         if (userRepository.findById(user.username()).isPresent())
             throw new UserExistsException();
 
@@ -55,6 +67,13 @@ public class UserController {
         return ResponseEntity.ok().body(createdUser.getUsername());
     }
 
+    /**
+     * Logs user out - sets expired cookie
+     *
+     * @param request  http request object
+     * @param response http response object
+     * @return "Logged out" message if successfully logged out
+     */
     @PostMapping("/logout")
     public ResponseEntity<String> logout(HttpServletRequest request, HttpServletResponse response) {
         SecurityContextHolder.clearContext();
@@ -71,6 +90,12 @@ public class UserController {
         return ResponseEntity.ok("Logged out");
     }
 
+    /**
+     * Retrieves currently logged-in user data
+     *
+     * @param user user data
+     * @return user data
+     */
     @GetMapping("/user")
     public UserDto getUser(@AuthenticationPrincipal UserDto user) {
         return user;

@@ -9,7 +9,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:3000")
 @RequestMapping("/api/search")
 public class SearchController {
     @Autowired
@@ -17,6 +16,15 @@ public class SearchController {
     @Autowired
     private SearchService searchService;
 
+    /**
+     * Gets news related to user's observed phrases
+     *
+     * @param user  user data
+     * @param page  index of results' page
+     * @param count amount of news related to one phrase
+     * @return Json Array of news objects
+     * @throws SearchApiConnectionException if it can not get proper response from bing search api
+     */
     @GetMapping()
     private String getObservedNews(
             @AuthenticationPrincipal UserDto user,
@@ -35,6 +43,15 @@ public class SearchController {
         return response;
     }
 
+    /**
+     * Gets news related to user given phrases
+     *
+     * @param phrase phrase to search for (path variable)
+     * @param page   index of results' page
+     * @param count  amount of news related to the phrase
+     * @return Json Array of news objects
+     * @throws SearchApiConnectionException if it can not get proper response from bing search api
+     */
     @GetMapping("/{phrase}")
     private String getNewsByPhrase(
             @PathVariable String phrase,

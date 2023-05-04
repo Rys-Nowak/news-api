@@ -3,7 +3,6 @@ package com.java.api.news.security;
 import com.java.api.news.exception.InvalidPasswordException;
 import com.java.api.news.exception.UserNotFoundException;
 import com.java.api.news.user.UserDto;
-import com.java.api.news.user.UserEntity;
 import com.java.api.news.user.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,7 +29,14 @@ public class AuthenticationService {
     @Value("${auth.key}")
     private String secretKey;
 
-    public UserDto authenticate(CredentialsDto credentials) {
+    /**
+     * Authenticates user by username and password
+     *
+     * @param credentials username and password
+     * @return user data with authentication token (no password)
+     * @throws InvalidPasswordException if passwords do not match
+     */
+    public UserDto authenticate(CredentialsDto credentials) throws InvalidPasswordException {
         if (userRepository.findById(credentials.username()).isEmpty())
             throw new UserNotFoundException("User not found");
 
@@ -41,17 +47,25 @@ public class AuthenticationService {
         throw new InvalidPasswordException();
     }
 
-    public UserDto findByLogin(String username) {
+    /**
+     * Finds user by their username
+     *
+     * @param username
+     * @return user data
+     */
+    public UserDto findByLogin(String username) throws UserNotFoundException {
         if (userRepository.findById(username).isPresent()) {
             return new UserDto(username, createToken(username));
         }
         throw new UserNotFoundException("User not found");
     }
 
-    public String createToken(String username) {
-        return username + "&" + calculateHmac(username);
-    }
-
+    /**
+     * Finds user by authentication token
+     *
+     * @param token logged-in user's authentication token
+     * @return user data
+     */
     public UserDto findByToken(String token) {
         String[] parts = token.split("&");
 
@@ -67,6 +81,15 @@ public class AuthenticationService {
         return userDto;
     }
 
+    /**
+     * Creates encoded authentication token for user based on their name and secret key
+     *
+     * @param username
+     * @return authentication token
+     */
+    public String createToken(String username) {
+        return username + "&" + calculateHmac(username);
+    }
 
     private String calculateHmac(String username) {
         byte[] secretKeyBytes = Objects.requireNonNull(secretKey).getBytes(StandardCharsets.UTF_8);
@@ -84,6 +107,12 @@ public class AuthenticationService {
         }
     }
 
+    /**
+     * Encodes password
+     *
+     * @param password plain text to encode
+     * @return encoded password
+     */
     public String hashPassword(String password) {
         return encoder.encode(password);
     }
