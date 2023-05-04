@@ -19,7 +19,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
                 new HttpHeaders(), HttpStatus.NOT_FOUND, request);
     }
 
-    @ExceptionHandler({WrongPasswordException.class})
+    @ExceptionHandler({InvalidPasswordException.class})
     protected ResponseEntity<Object> handleWrongPassword(Exception ex, WebRequest request) {
         return handleExceptionInternal(ex, "Wrong password",
                 new HttpHeaders(), HttpStatus.UNAUTHORIZED, request);

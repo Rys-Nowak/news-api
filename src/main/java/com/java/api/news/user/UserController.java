@@ -2,11 +2,20 @@ package com.java.api.news.user;
 
 import com.java.api.news.exception.UserNotFoundException;
 import com.java.api.news.security.AuthenticationService;
+import com.java.api.news.security.CookieAuthenticationFilter;
+import com.java.api.news.security.CredentialsDto;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import java.net.URI;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:3000")
@@ -18,43 +27,35 @@ public class UserController {
     private AuthenticationService auth;
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody User user) throws UserNotFoundException {
-        if (userRepository.findById(user.username).isEmpty())
-            throw new UserNotFoundException("User not found");
+    public ResponseEntity<UserDto> login(
+            @AuthenticationPrincipal UserDto user,
+            HttpServletResponse servletResponse
+    ) throws UserNotFoundException {
+        Cookie authCookie = new Cookie(CookieAuthenticationFilter.COOKIE_NAME, user.getToken());
+        authCookie.setHttpOnly(true);
+        authCookie.setSecure(true);
+        authCookie.setMaxAge((int) Duration.of(1, ChronoUnit.DAYS).toSeconds());
+        authCookie.setPath("/");
 
-        String sessionId = auth.verifyUser(user, userRepository.findById(user.username).get().password);
+        servletResponse.addCookie(authCookie);
 
-        ResponseCookie cookie = ResponseCookie.from("sessionId", sessionId)
-                .httpOnly(true)
-//                .secure(true)
-                .path("/api")
-                .maxAge(60 * 60 * 24) // 24h
-                .build();
-
-        return ResponseEntity
-                .ok()
-                .header(HttpHeaders.SET_COOKIE, cookie.toString())
-                .body(user.username);
+        return ResponseEntity.ok(user);
     }
 
     @PostMapping("/register")
-    public String register(@RequestBody User user) {
-        user.password = auth.hashPassword(user.password);
-        userRepository.save(user);
-        return user.username;
+    public ResponseEntity<String> register(@RequestBody @Validated CredentialsDto user) {
+        UserEntity createdUser = auth.createUser(user.username(), user.password());
+        return ResponseEntity.ok().body(createdUser.getUsername());
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<String> logout(@CookieValue(name = "sessionId", defaultValue = "") String sessionId) {
-        ResponseCookie deleteCookie = ResponseCookie
-                .from("sessionId", "")
-                .build();
+    public ResponseEntity<Void> logout() {
+        SecurityContextHolder.clearContext();
+        return ResponseEntity.noContent().build();
+    }
 
-        auth.clearSession(sessionId);
-
-        return ResponseEntity
-                .ok()
-                .header(HttpHeaders.SET_COOKIE, deleteCookie.toString())
-                .body("Logged out");
+    @GetMapping("/user")
+    public UserDto getUser(@AuthenticationPrincipal UserDto user) {
+        return user;
     }
 }

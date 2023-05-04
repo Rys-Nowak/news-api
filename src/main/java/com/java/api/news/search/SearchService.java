@@ -1,14 +1,13 @@
 package com.java.api.news.search;
 
 import com.google.gson.*;
-import com.java.api.news.phrase.Phrase;
+import com.java.api.news.phrase.PhraseEntity;
 import com.java.api.news.phrase.PhraseRepository;
-import io.github.cdimascio.dotenv.Dotenv;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.net.*;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.io.*;
 import javax.net.ssl.HttpsURLConnection;
@@ -18,15 +17,16 @@ public class SearchService {
     @Autowired
     private PhraseRepository phraseRepository;
 
+    @Value("${bing.search.api.key}")
+    private String API_KEY;
+
     private String makeRequest(String searchTerm, int page, int count) throws Exception {
-        Dotenv dotenv = Dotenv.configure().load();
-        String subscriptionKey = dotenv.get("BING_API_KEY");
-        String host = dotenv.get("BING_API_ENDPOINT");
+        String subscriptionKey = API_KEY;
+        String host = "https://api.bing.microsoft.com/";
         String path = "/v7.0/news/search";
         String searchQuery = searchTerm + "&count=" + count + "&offset=" + (page - 1) * count;
 //        + "&mkt=en-us";
-
-        URL url = new URL(host + path + "?q=" + URLEncoder.encode(searchQuery, StandardCharsets.UTF_8));
+        URL url = new URL(host + path + "?q=" + searchQuery);
         HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
         connection.setRequestProperty("Ocp-Apim-Subscription-Key", subscriptionKey);
 
@@ -57,7 +57,7 @@ public class SearchService {
     public String searchObservedNews(int page, int count, String username) throws Exception {
         var allEntries = phraseRepository.findAll();
         var phrases = new ArrayList<String>();
-        for (Phrase phrase : allEntries) {
+        for (PhraseEntity phrase : allEntries) {
             if (phrase.username.equals(username))
                 phrases.add(phrase.observedPhrase);
         }

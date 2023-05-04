@@ -7,7 +7,7 @@ import jakarta.persistence.IdClass;
 
 @Entity
 @IdClass(PhraseId.class)
-public class Phrase {
+public class PhraseEntity {
     @Id
     @Column(nullable = false)
     public String username;
@@ -16,9 +16,9 @@ public class Phrase {
     @Column(nullable = false)
     public String observedPhrase;
 
-    public Phrase() {}
+    public PhraseEntity() {}
 
-    public Phrase(String username, String observedPhrase) {
+    public PhraseEntity(String username, String observedPhrase) {
         this.username = username;
         this.observedPhrase = observedPhrase;
     }
