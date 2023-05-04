@@ -1,6 +1,8 @@
 # News api
 Rest api for <a href="https://github.com/Rys-Nowak/news-app">news application</a>
 
+App here: <a href="https://app-news-api.azurewebsites.net">https://app-news-api.azurewebsites.net</a>
+
 ## Tools used
 * Spring
   * Spring Boot
