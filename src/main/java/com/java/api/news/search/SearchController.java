@@ -44,7 +44,7 @@ public class SearchController {
     }
 
     /**
-     * Gets news related to user given phrases
+     * Gets news related to given phrase
      *
      * @param phrase phrase to search for (path variable)
      * @param page   index of results' page

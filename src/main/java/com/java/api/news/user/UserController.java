@@ -78,14 +78,21 @@ public class UserController {
     public ResponseEntity<String> logout(HttpServletRequest request, HttpServletResponse response) {
         SecurityContextHolder.clearContext();
 
-        Optional<Cookie> authCookie = Stream.of(Optional.ofNullable(request.getCookies()).orElse(new Cookie[0]))
-                .filter(cookie -> CookieAuthenticationFilter.COOKIE_NAME.equals(cookie.getName()))
-                .findFirst();
+//        Optional<Cookie> authCookie = Stream.of(Optional.ofNullable(request.getCookies()).orElse(new Cookie[0]))
+//                .filter(cookie -> CookieAuthenticationFilter.COOKIE_NAME.equals(cookie.getName()))
+//                .findFirst();
+//
+//        authCookie.ifPresent(cookie -> {
+//            cookie.setMaxAge(0);
+//            response.addCookie(cookie);
+//        });
 
-        authCookie.ifPresent(cookie -> {
-            cookie.setMaxAge(0);
-            response.addCookie(authCookie.get());
-        });
+        Cookie cookie = new Cookie(CookieAuthenticationFilter.COOKIE_NAME, null);
+        cookie.setPath("/");
+        cookie.setHttpOnly(true);
+        cookie.setSecure(true);
+        cookie.setMaxAge(0);
+        response.addCookie(cookie);
 
         return ResponseEntity.ok("Logged out");
     }
