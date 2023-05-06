@@ -20,12 +20,11 @@ public class SearchService {
     @Value("${bing.search.api.key}")
     private String API_KEY;
 
-    private String makeRequest(String searchTerm, int page, int count) throws Exception {
+    private SearchResults makeRequest(String searchTerm, int page, int count) throws Exception {
         String subscriptionKey = API_KEY;
         String host = "https://api.bing.microsoft.com/";
         String path = "/v7.0/news/search";
-        String searchQuery = searchTerm + "&count=" + count + "&offset=" + (page - 1) * count;
-//        + "&mkt=en-us";
+        String searchQuery = searchTerm + "&count=" + count + "&offset=" + (page - 1) * count + "&mkt=en-us";
         URL url = new URL(host + path + "?q=" + searchQuery);
         HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
         connection.setRequestProperty("Ocp-Apim-Subscription-Key", subscriptionKey);
@@ -36,22 +35,18 @@ public class SearchService {
         return getSearchValue(searchResult);
     }
 
-    private String getSearchValue(String json_text) {
-        JsonParser parser = new JsonParser();
-        JsonObject json = (JsonObject) parser.parse(json_text);
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        var value = json.getAsJsonArray("value");
-        return gson.toJson(value);
+    private SearchResults getSearchValue(String json_text) {
+        return new Gson().fromJson(json_text, SearchResults.class);
     }
 
-    private String concatJsonArrays(List<String> arrays) {
-        JsonParser parser = new JsonParser();
-        JsonArray allValues = new JsonArray();
-        for (var array : arrays) {
-            allValues.addAll((JsonArray) parser.parse(array));
+    private SearchResults concatSearchResults(List<SearchResults> arrays) {
+        SearchResults concatenatedResults = new SearchResults();
+        concatenatedResults.value = new ArrayList<>();
+        for (var resultSet : arrays) {
+            concatenatedResults.value.addAll(resultSet.value);
         }
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        return gson.toJson(allValues);
+
+        return concatenatedResults;
     }
 
     /**
@@ -61,10 +56,10 @@ public class SearchService {
      * @param page     index of results' page
      * @param count    amount of news related to one phrase
      * @param username of the user
-     * @return Json Array of news objects
+     * @return results of searching
      * @throws Exception if connection with api goes wrong
      */
-    public String searchObservedNews(int page, int count, String username) throws Exception {
+    public SearchResults searchObservedNews(int page, int count, String username) throws Exception {
         var allEntries = phraseRepository.findAll();
         var phrases = new ArrayList<String>();
         for (PhraseEntity phrase : allEntries) {
@@ -72,13 +67,13 @@ public class SearchService {
                 phrases.add(phrase.observedPhrase);
         }
 
-        var searchResults = new ArrayList<String>(phrases.size());
+        var searchResults = new ArrayList<SearchResults>(phrases.size());
         for (String phrase : phrases) {
             searchResults.add(makeRequest(phrase, page, count));
             Thread.sleep(340); // 3 requests per second - free access
         }
 
-        return concatJsonArrays(searchResults);
+        return concatSearchResults(searchResults);
     }
 
     /**
@@ -88,10 +83,10 @@ public class SearchService {
      * @param searchTerm phrase to search
      * @param page       index of results' page
      * @param count      amount of news related to one phrase
-     * @return Json Array of news objects
+     * @return results of searching
      * @throws Exception if connection with api goes wrong
      */
-    public String searchNews(String searchTerm, int page, int count) throws Exception {
+    public SearchResults searchNews(String searchTerm, int page, int count) throws Exception {
         return makeRequest(searchTerm, page, count);
     }
 }

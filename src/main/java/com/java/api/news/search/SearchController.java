@@ -22,11 +22,11 @@ public class SearchController {
      * @param user  user data
      * @param page  index of results' page
      * @param count amount of news related to one phrase
-     * @return Json Array of news objects
-     * @throws SearchApiConnectionException if it can not get proper response from bing search api
+     * @return results of searching
+     * @throws SearchApiConnectionException if it can not get a proper response from bing search api
      */
     @GetMapping()
-    private String getObservedNews(
+    private SearchResults getObservedNews(
             @AuthenticationPrincipal UserDto user,
             @RequestParam(value = "page", required = false) Integer page,
             @RequestParam(value = "count", required = false) Integer count
@@ -34,7 +34,7 @@ public class SearchController {
         if (page == null) page = 1;
         if (count == null) count = 15;
 
-        String response;
+        SearchResults response;
         try {
             response = searchService.searchObservedNews(page, count, user.getUsername());
         } catch (Exception e) {
@@ -49,11 +49,11 @@ public class SearchController {
      * @param phrase phrase to search for (path variable)
      * @param page   index of results' page
      * @param count  amount of news related to the phrase
-     * @return Json Array of news objects
-     * @throws SearchApiConnectionException if it can not get proper response from bing search api
+     * @return results of searching
+     * @throws SearchApiConnectionException if it can not get a proper response from bing search api
      */
     @GetMapping("/{phrase}")
-    private String getNewsByPhrase(
+    private SearchResults getNewsByPhrase(
             @PathVariable String phrase,
             @RequestParam(value = "page", required = false) Integer page,
             @RequestParam(value = "count", required = false) Integer count
@@ -61,7 +61,7 @@ public class SearchController {
         if (page == null) page = 1;
         if (count == null) count = 30;
 
-        String response;
+        SearchResults response;
         try {
             response = searchService.searchNews(phrase, page, count);
         } catch (Exception e) {
