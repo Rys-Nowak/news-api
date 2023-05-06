@@ -41,11 +41,11 @@ App here: <a href="https://app-news-api.azurewebsites.net">https://app-news-api.
 
 ### Comunication with Bing API
 * GET /api/search
-  * Returns news related to user's observed phrases as a JSON array of objects containing news data
+  * Returns news related to user's observed phrases
   * Takes index of results' page as _page_ query parameter
   * Takes amount of news related to one phrase as _count_ query parameter
 * GET api/search/{phrase}
-  * Returns news related to given phrase as a JSON array of objects containing news data
-  * Takes phrase to search as path variable
+  * Returns news related to given phrase
+  * Takes searched keyword as path variable
   * Takes index of results' page as _page_ query parameter
   * Takes amount of news related to one phrase as _count_ query parameter 
