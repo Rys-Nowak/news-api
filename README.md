@@ -19,10 +19,10 @@ App here: <a href="https://app-news-api.azurewebsites.net">https://app-news-api.
 ### User authentication
 * POST /api/login
   * Enables login by username and password (in request body)
-  * Returns user data
+  * Returns user data (username and auth token)
 * POST /api/register
   * Creates new user with given username and password (in request body)
-  * Returns user data
+  * Returns username
 * POST /api/logout
   * Logs user out
 * GET /api/user
@@ -41,11 +41,11 @@ App here: <a href="https://app-news-api.azurewebsites.net">https://app-news-api.
 
 ### Comunication with Bing API
 * GET /api/search
-  * Returns news related to user's observed phrases
+  * Returns an array of news related to user's observed phrases
   * Takes index of results' page as _page_ query parameter
-  * Takes amount of news related to one phrase as _count_ query parameter
+  * Takes amount of news related to each phrase as _count_ query parameter
 * GET api/search/{phrase}
-  * Returns news related to given phrase
+  * Returns an array of news related to given phrase
   * Takes searched keyword as path variable
   * Takes index of results' page as _page_ query parameter
-  * Takes amount of news related to one phrase as _count_ query parameter 
+  * Takes amount of news related to the phrase as _count_ query parameter 
