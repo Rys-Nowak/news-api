@@ -14,6 +14,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.Optional;
@@ -54,7 +55,7 @@ public class UserController {
      * Creates new user with given username and password
      *
      * @param user user data (request body)
-     * @return New user's username
+     * @return New user's username, 201 status
      * @throws UserExistsException if user with given username already exists in the database
      */
     @PostMapping("/register")
@@ -64,7 +65,7 @@ public class UserController {
             throw new UserExistsException();
 
         UserEntity createdUser = userRepository.save(new UserEntity(user.username(), auth.hashPassword(String.valueOf(user.password()))));
-        return ResponseEntity.ok().body(createdUser.getUsername());
+        return ResponseEntity.created(URI.create("/user")).body(createdUser.getUsername());
     }
 
     /**
@@ -72,7 +73,7 @@ public class UserController {
      *
      * @param request  http request object
      * @param response http response object
-     * @return "Logged out" message if successfully logged out
+     * @return no content response - 204 status code
      */
     @PostMapping("/logout")
     public ResponseEntity<String> logout(HttpServletRequest request, HttpServletResponse response) {
@@ -85,7 +86,7 @@ public class UserController {
         cookie.setMaxAge(0);
         response.addCookie(cookie);
 
-        return ResponseEntity.ok("Logged out");
+        return ResponseEntity.noContent().build();
     }
 
     /**
