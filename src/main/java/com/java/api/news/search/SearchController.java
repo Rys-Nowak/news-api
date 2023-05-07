@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/search")
 public class SearchController {
@@ -26,7 +28,7 @@ public class SearchController {
      * @throws SearchApiConnectionException if it can not get a proper response from bing search api
      */
     @GetMapping()
-    private SearchResults getObservedNews(
+    private List<SearchResult> getObservedNews(
             @AuthenticationPrincipal UserDto user,
             @RequestParam(value = "page", required = false) Integer page,
             @RequestParam(value = "count", required = false) Integer count
@@ -40,7 +42,7 @@ public class SearchController {
         } catch (Exception e) {
             throw new SearchApiConnectionException(e.getMessage());
         }
-        return response;
+        return response.value;
     }
 
     /**
@@ -53,7 +55,7 @@ public class SearchController {
      * @throws SearchApiConnectionException if it can not get a proper response from bing search api
      */
     @GetMapping("/{phrase}")
-    private SearchResults getNewsByPhrase(
+    private List<SearchResult> getNewsByPhrase(
             @PathVariable String phrase,
             @RequestParam(value = "page", required = false) Integer page,
             @RequestParam(value = "count", required = false) Integer count
@@ -67,6 +69,6 @@ public class SearchController {
         } catch (Exception e) {
             throw new SearchApiConnectionException(e.getMessage());
         }
-        return response;
+        return response.value;
     }
 }
